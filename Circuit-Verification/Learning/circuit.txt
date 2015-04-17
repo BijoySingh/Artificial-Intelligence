@@ -1,0 +1,1 @@
+FULL_ADDER(A,B,C)=OR(OR(AND(A,B),AND(B,C)),AND(A,C))
