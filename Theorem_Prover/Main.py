@@ -65,8 +65,8 @@ print(str_display)
 # input_str = "(((~A).(~B))>(~(A|B)))"
 
 #Special TestCase
-input_str = "(((p>q)>((r>s)>t))>((u>((r>s)>t))>((p>u)>(s>t))))"
-# input_str = "(((p>q)>A)>((~p)>A))"
+# input_str = "(((p>q)>((r>s)>t))>((u>((r>s)>t))>((p>u)>(s>t))))"
+input_str = "(((p>q)>A)>((~p)>A))"
 # input_str = "(((p>A).((~p)>A))>A)"
 
 
