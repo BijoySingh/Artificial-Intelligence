@@ -20,7 +20,7 @@ max_length = 10
 train_size = 100
 test_size = 50
 force_length = False
-load_from_pickle_file = True
+load_from_pickle_file = False
 redo_count = 100
 reuse_neural_network = False
 kfold_verification = False
@@ -126,6 +126,7 @@ input_length = max_length*graph_bit_size
 output_length = max_length*phone_bit_size
 
 grapheme_to_phoneme_in_bits = []
+phoneme_to_grapheme_in_bits = []
 
 for d in read_data[2]:
 	if(len(d[0]) > max_length or (force_length and len(d[0]) != max_length)):
@@ -133,6 +134,7 @@ for d in read_data[2]:
 	grapheme = convertToBits(d[0],graph2bit,max_length,graph_bit_size)
 	phoneme = convertToBits(d[1],phone2bit,max_length,phone_bit_size)
 	grapheme_to_phoneme_in_bits.append([grapheme,phoneme])
+	grapheme_to_phoneme_in_bits.append([phoneme,grapheme])
 
 def club(lst,bitsize):
 	output = []
@@ -210,7 +212,18 @@ def test_network(network, truth_table,test_size,input_bit_size,output_bit_size,t
 	filen.write("BIT ACCURACY :: " + str(100*correct_bits_count/total_bits_count) +  "\n")
 	print("ACCURACY :: " + str(100*correct_count/total_count))
 	print("BIT ACCURACY :: " + str(100*correct_bits_count/total_bits_count))
-		
+	
+table_to_test = grapheme_to_phoneme_in_bits	
+inner_layer_length = max_length
+outer_layer_length = output_length
+input_layer_length = input_length
+
+'''
+table_to_test = phoneme_to_grapheme_in_bits
+inner_layer_length = max_length
+outer_layer_length = input_length
+input_layer_length = output_length
+'''
 
 if(train_size > len(grapheme_to_phoneme_in_bits)):
 	print("Over Demand")
@@ -225,19 +238,22 @@ test_table = []
 
 if(kfold_verification):
 	train_size = round((len(grapheme_to_phoneme_in_bits)*4)/5)
-	truth_table = grapheme_to_phoneme_in_bits[:train_size]
-	test_table = grapheme_to_phoneme_in_bits[train_size:]
+	truth_table = table_to_test[:train_size]
+	test_table = table_to_test[train_size:]
 	truth_table.append([zero_arr(input_length),zero_arr(output_length)])
 else:
-	truth_table = grapheme_to_phoneme_in_bits[:train_size]
+	truth_table = table_to_test[:train_size]
 	test_table = truth_table
 	truth_table.append([zero_arr(input_length),zero_arr(output_length)])
 
 if(reuse_neural_network):
 	network = pickle.load(open(neural_network_file, "rb" ))
 else:
-	network = Network([max_length,output_length],input_length,eta,accuracy)
+	network = Network([inner_layer_length,outer_layer_length],input_layer_length,eta,accuracy)
 	network.train_network(truth_table,redo_count)
 	pickle.dump(network,open(neural_network_file, "wb"))
 
 test_network(network,test_table,test_size,graph_bit_size,phone_bit_size)
+# test_network(network,test_table,test_size,phone_bit_size,graph_bit_size)
+
+
